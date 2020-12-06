@@ -1,0 +1,6 @@
+User-agent: *
+
+User-agent: ia_archiver
+Disallow:
+
+Sitemap: https://markramige.com/sitemap.xml
