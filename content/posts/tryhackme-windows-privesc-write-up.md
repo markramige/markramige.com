@@ -69,7 +69,7 @@ We have permissions to write to the admin startup directory. We're going to crea
 
 ## Token Impersonation
 ### Task 16
-For this task we're exploting a vulnerability in Windows to get local privilege execution. It turns out that if our user has `SeImpersonate` or `SeAssignPrimaryToken` privileges, we can use those to gain `SYSTEM` privileges.
+For this task we're exploiting a vulnerability in Windows to get local privilege execution. It turns out that if our user has `SeImpersonate` or `SeAssignPrimaryToken` privileges, we can use those to gain `SYSTEM` privileges.
 
 ### Task 17
 We're again abusing `SeImpersonatePrivilege` with the PrintSpoofer vulnerability to escalate local access to `SYSTEM`.

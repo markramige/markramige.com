@@ -72,6 +72,24 @@ This task is a good demonstration of the power of Burp Suite intruder. We are go
 ### Task 9
 * Given the URL "http://shibes.xyz/api.php", what would the entire wfuzz command look like to query the "breed" parameter using the wordlist "big.txt" (assume that "big.txt" is in your current directory)
 
+An example command `wfuzz -c -z file,mywordlist.txt -d “username=FUZZ&password=FUZZ” -u http://shibes.thm/login.php` is given in the task text. We are going to keep the `-c` for color output and `-z` for specifying the wordlist.
+
+The URL will be replaced with the given URL in the question. The wordlist will be replaced with `big.txt`
+
+We also need to add ?breed=FUZZ to the end of the URL so that `wfuzz` can work.
+
 * Use GoBuster to find the API directory. What file is there?
 
+Running `gobuster dir -u MACHINE_IP -w /usr/share/wordlists/dirb/big.txt -x php,txt,html`
+
+All we're doing here is running the same `gobuster` command as in the task text, but replacing the URL with our target IP and the wordlist with the `big.txt` wordlist from [Seclists](https://github.com/danielmiessler/SecLists) which is included with Kali.
+
+We find that /api is found by gobuster. If we navigate to `http://MACHINE_IP/api` then we'll find the file that is asked about in the question.
+
 * Fuzz the date parameter on the file you found in the API directory. What is the flag displayed in the correct post?
+
+Now we're going to change the wfuzz command that we used previously to find the flag. We're also going to use the included `wordlist` file to speed up the fuzzing.
+
+`wfuzz -c -z file,wordlist http://MACHINE_IP/api/site-log.php?date=FUZZ`
+
+We see from the output that one of the fuzzed dates returns 13 characters. If we enter `http://MACHINE_IP/api/site-log.php?date=DATEFOUNDBYWFUZZ` in our browser we get our flag.

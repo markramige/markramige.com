@@ -51,7 +51,7 @@ In this task we're using Metasploit to suggest exploits to use based on our Wind
 
 ## Potato Escalation
 ### Task 11
-The [Potato exploit](https://github.com/foxglovesec/Potato) allows us to run an abritrary command with elevated privileges. For this task we're going to use Potato to run `net localgroup administrators user /add` which gives our normal user administrator privileges.
+The [Potato exploit](https://github.com/foxglovesec/Potato) allows us to run an arbitrary command with elevated privileges. For this task we're going to use Potato to run `net localgroup administrators user /add` which gives our normal user administrator privileges.
 
 ## Password Mining Escalation
 ### Task 12

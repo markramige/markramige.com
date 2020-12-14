@@ -30,11 +30,11 @@ Check the `Server` response header in Burp Suite.
 
 * What language was used to create the website?
 
-Check the `X-Powered-By` reponse header.
+Check the `X-Powered-By` response header.
 
 * What version of the language is used?
 
-Check the `X-Powered-By` reponse header.
+Check the `X-Powered-By` response header.
 
 ## Task 4 - Authentication
 * What is the admin username?
