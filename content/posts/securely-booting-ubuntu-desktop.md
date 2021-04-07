@@ -1,5 +1,5 @@
 +++
-title = "TryHackMe Advent of Cyber 2 Write-Up"
+title = "Securely Booting Ubuntu Desktop"
 date = "2021-12-25"
 author = "Mark Ramige"
 authorTwitter = "markramige" #do not include @

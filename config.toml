@@ -1,4 +1,4 @@
-title = "Mark Ramige: Appsec and Bug Bounties"
+title = "Mark Ramige: Cybersecurity and Linux, mostly"
 theme = "terminal"
 
 baseurl = "https://markramige.com/"
@@ -6,7 +6,6 @@ languageCode = "en-us"
 paginate = 5
 enableRobotsTXT = true
 #enableGitInfo = true
-googleAnalytics = "UA-178664934-1"
 
 [params]
   # dir name of your main content (default is `content/posts`).
@@ -17,7 +16,7 @@ googleAnalytics = "UA-178664934-1"
   themeColor = "blue"
 
   # if you set this to 0, only submenu trigger will be visible
-  showMenuItems = 3
+  showMenuItems = 4
 
   # show selector to switch language
   showLanguageSelector = false
@@ -52,11 +51,11 @@ googleAnalytics = "UA-178664934-1"
 [languages]
   [languages.en]
     languageName = "English"
-    title = "Mark Ramige: Appsec and Bug Bounties"
-    subtitle = "Infosec; application security and bug bounties, mostly"
+    title = "Mark Ramige: Cybersecurity and Linux, mostly"
+    subtitle = "Cybersecurity and Linux, mostly"
     owner = "Mark Ramige"
-    keywords = "infosec bugbounty appsec security windows linux"
-    copyright = "© 2020 <a href='https://github.com/markramige/markramigecom'>Mark Ramige</a> :: <a href='https://creativecommons.org/licenses/by/4.0/?ref=chooser-v1'>CC BY 4.0</a> Licensed :: Powered by <a href='http://gohugo.io'>Hugo</a>"
+    keywords = "cybersecurity infosec bugbounty appsec security windows linux"
+    copyright = "© 2021 <a href='https://github.com/markramige/markramigecom'>Mark Ramige</a> :: <a href='https://creativecommons.org/licenses/by/4.0/?ref=chooser-v1'>CC BY 4.0</a> Licensed :: Powered by <a href='http://gohugo.io'>Hugo</a>"
     menuMore = "Show more"
     readMore = "Read more"
     readOtherPosts = "Read other posts"
@@ -72,6 +71,10 @@ googleAnalytics = "UA-178664934-1"
         identifier = "about"
         name = "About"
         url = "/about"
+      [[languages.en.menu.main]]
+        identifier = "archive"
+	name = "Archive"
+	url = "/posts"
       [[languages.en.menu.main]]
         identifier = "github"
         name = "GitHub"
