@@ -1,95 +1,193 @@
 +++
 title = "Securely Booting Ubuntu Desktop"
-date = "2021-12-25"
+date = "2021-04-10"
 author = "Mark Ramige"
 authorTwitter = "markramige" #do not include @
 cover = ""
-tags = ["", ""]
-keywords = [""]
-description = "Intro"
+tags = ["ubuntu", "linux", "crypto", "fde"]
+keywords = ["ubuntu", "linux", "crypto", "fde"]
+description = "[UEFI secure boot](https://wiki.ubuntu.com/UEFI/SecureBoot) has been supported out of the box by almost all major Linux distributions for many years. I always disabled it out of habit because I saw it as a hassle in the early days. Recently I've been learning more about the advantages of keeping secure boot enabled. The advantages really depend on how many steps you take to modify your installation."
 showFullContent = false
 +++
 
-Intro
+[UEFI secure boot](https://wiki.ubuntu.com/UEFI/SecureBoot) has been supported out of the box by almost all major Linux distributions for many years. I always disabled it out of habit because I saw it as a hassle in the early days. Recently I've been learning more about the advantages of keeping secure boot enabled. The advantages really depend on how many steps you take to modify your installation.
+
+Ubuntu includes the `shim` bootloader which is signed by Microsoft and verified by your computer's firmware when you boot. Canonical signs all of their kernel and GRUB (bootloader) releases with their own key which is verified by the `shim` bootloader. As of kernel 5.4, which is included by default in Ubuntu 20.04, enabling secure boot also enables kernel lockdown. This [disables access to several kernel features](http://manpages.ubuntu.com/manpages/hirsute/man7/kernel_lockdown.7.html) which could be exploited by an attacker. Secure boot does not verify your initrd images which are generated on your PC and can change depending on your settings and installed software.
+
+The boot process simplified:
+
+`UEFI firmware -> shim -> GRUB -> kernel -> initramfs -> systemd`
+
+Enabling full disk encryption in the Ubuntu installer only encrypts your system partition which contains all of the OS files and home directories. It does not encrypt your boot partition which contains all of your kernel and initrd files.
+
+This guide will cover making sure secure boot and kernel lockdown are enabled, enabling the full disk encryption options in the Ubuntu installer, moving your boot files to an encrypted partition and adding key files to your boot and system partitions so that you only need to enter one password at boot.
 
 ## Contents
-* [Day 1 - A Christmas Crisis](#day-1---a-christmas-crisis)
-* [Day 2 - The Elf Strikes Back!](#day-2---the-elf-strikes-back)
-* [Day 3 - Christmas Chaos](#day-3---christmas-chaos)
-* [Day 4 - Santa's Watching](#day-4---santas-watching)
+* [Installation](#installation)
+* [Crypto setup](#crypto-setup)
+* [Future improvements](#future-improvements)
+* [Conclusion](#conclusion)
 
-## Day 1 - A Christmas Crisis
-### Task 6
-* What is the name of the cookie used for authentication?
+## Installation
+This guide assumes that you're installing Ubuntu 20.04. The steps can be adapted for other Debian-based distributions, but kernel lockdown requires at least kernel 5.4.
 
-Open Firefox devtools and go to the Network tab. There is only one cookie for this page.
+Install Ubuntu and at the disk partitioning step check "Use LVM with the new Ubuntu installation" and "Encrypt the new Ubuntu installation for security."
 
-* In what format is the value of this cookie encoded?
+![Enable FDE in the Ubuntu installer](/images/securely-booting-ubuntu-desktop/enable-fde.png)
 
-If you don't immediately recognize the format, paste it into [CyberChef](https://gchq.github.io/CyberChef/) and try decoding from different formats until the output makes sense.
+Enter a password that you will need to enter at each boot.
 
-* Having decoded the cookie, what format is the data stored in?
+![Enter FDE password](/images/securely-booting-ubuntu-desktop/enter-password.png)
 
-This will be obvious once the cookie is decoded.
+Continue the installation and reboot your machine when it's completed.
 
-* What is the value of Santa's cookie?
+Run `sudo apt update && sudo apt full-upgrade -y` and reboot when the upgrade is finished.
 
-Replace the username of the cookie from your account and reencode it in the same format using CyberChef.
+After installation is finished you can run `mokutil --sb-state` to verify that secure boot is enabled and `cat /sys/kernel/security/lockdown` to check the kernel lockdown status.
 
-* What is the flag you're given when the line is fully active?
+![Check secure boot and lockdown status](/images/securely-booting-ubuntu-desktop/verify-secure-boot.png)
 
-Replace your cookie with Santa's cookie and reload the page. You should now be able to toggle all of the switches on and the flag will be shown.
+## Crypto setup
+The default Ubuntu install creates a FAT EFI partition, an unencrypted boot partition, and an encrypted system partition using LUKS2.
 
-## Day 2 - The Elf Strikes Back!
-### Task 7
-* What string of text needs adding to the URL to get access to the upload page?
+We need to encrypt the boot partition using LUKS1 since the version of GRUB included in Ubuntu 20.04 doesn't support LUKS2 encryption. LUKS1 uses PBKDF2 and LUKS2 uses argon2 which is memory-hard and makes it more expensive to crack your password. LUKS1 is still secure as long as your password is random and long.
 
-Based on the question we know that we need a GET request to gain access to the page. The name of the request is given on the webpage and the value of the request is given on the sticky note in the task text. The format of the request is `?name=value`.
+The default Ubuntu FDE boot process simplified:
 
-* What type of file is accepted by the site?
+`UEFI firmware -> shim -> GRUB -> kernel -> initramfs -> *enter password* -> systemd`
 
-We can check in the page source to see what kind of files are accepted in the `<input>` tag. We can also just click on the file select button and the browser UI will show us what types of files are accepted. This doesn't necessarily mean that the server accepts the same types of files, or that there are any checks on the server-side at all.
+After our modifications it changes to:
 
-* In which directory are the uploaded files stored?
+`UEFI firmware -> shim -> GRUB -> *enter password* -> kernel -> initramfs -> systemd`
 
-Once we've uploaded a file successfully, we can enumerate directories and see if we can guess the correct one. If it turns out not to be easy to guess, then we could use a directory brute-forcing tool such as `ffuf`.
+Start by finding out where your boot drive is located
 
-* Activate your reverse shell and catch it in a netcat listener!
+`sudo fdisk -l`
 
-Assuming we've configured the `php-remote-shell.php` file correctly and run our listening, then it's just a matter of navigating to the remote shell script in the browser and it will automatically connect to our listener.
+For example, I'm running Ubuntu in a VM for testing and mine is `/dev/vda`. It should have three partitions. Replace `vda` in the following steps with your actual drive.
 
-* What is the flag in /var/www/flag.txt?
+Umount the EFI partition
 
-Since our remote shell is now connected, we can just do `cat /var/www/flag.txt` to get the flag!
+`sudo umount /boot/efi`
 
-## Day 3 - Christmas Chaos
-### Task 8
-* What is the flag?
+Make a temporary directory to store the boot files while we format and encrypt the new partition.
 
-This task is a good demonstration of the power of Burp Suite intruder. We are going to intercept the traffic with Burp Suite while using our browser to log in. After finding the login request in Burp Suite, we send it to intruder and input the user names and passwords for the payloads. After the attack finishes, we can check the responses to see which of them redirects us to the `/tracker` URL. We can now log in on the web page to get access to the Santa tracker. The flag is shown on the page.
+`mkdir ~/boottemp`
 
-## Day 4 - Santa's Watching
-### Task 9
-* Given the URL "http://shibes.xyz/api.php", what would the entire wfuzz command look like to query the "breed" parameter using the wordlist "big.txt" (assume that "big.txt" is in your current directory)
+Copy the boot files
 
-An example command `wfuzz -c -z file,mywordlist.txt -d “username=FUZZ&password=FUZZ” -u http://shibes.thm/login.php` is given in the task text. We are going to keep the `-c` for color output and `-z` for specifying the wordlist.
+`sudo cp -r /boot/* ~/boottemp`
 
-The URL will be replaced with the given URL in the question. The wordlist will be replaced with `big.txt`
+Umount the boot partition
 
-We also need to add ?breed=FUZZ to the end of the URL so that `wfuzz` can work.
+`sudo umount /boot`
 
-* Use GoBuster to find the API directory. What file is there?
+Enable encryption on the boot partition.
 
-Running `gobuster dir -u MACHINE_IP -w /usr/share/wordlists/dirb/big.txt -x php,txt,html`
+`sudo cryptsetup luksFormat --type luks1 /dev/vda2`
 
-All we're doing here is running the same `gobuster` command as in the task text, but replacing the URL with our target IP and the wordlist with the `big.txt` wordlist from [Seclists](https://github.com/danielmiessler/SecLists) which is included with Kali.
+Copy the UUID to your clipboard for later to make it easier.
 
-We find that /api is found by gobuster. If we navigate to `http://MACHINE_IP/api` then we'll find the file that is asked about in the question.
+`sudo blkid /dev/vda2`
 
-* Fuzz the date parameter on the file you found in the API directory. What is the flag displayed in the correct post?
+![Copy the boot partition UUID](/images/securely-booting-ubuntu-desktop/boot-partition-uuid.png)
 
-Now we're going to change the wfuzz command that we used previously to find the flag. We're also going to use the included `wordlist` file to speed up the fuzzing.
+Open the encrypted partition (replace my UUID with yours)
 
-`wfuzz -c -z file,wordlist http://MACHINE_IP/api/site-log.php?date=FUZZ`
+`sudo cryptsetup luksOpen /dev/vda2 luks-808a8028-5ad2-494b-aadd-6bcf9a67f43d`
 
-We see from the output that one of the fuzzed dates returns 13 characters. If we enter `http://MACHINE_IP/api/site-log.php?date=DATEFOUNDBYWFUZZ` in our browser we get our flag.
+Format the boot partition
+
+`sudo mkfs.ext4 /dev/mapper/luks-808a8028-5ad2-494b-aadd-6bcf9a67f43d`
+
+Mount the boot partition
+
+`sudo mount /dev/mapper/luks-808a8028-5ad2-494b-aadd-6bcf9a67f43d /boot`
+
+Copy the boot files back to the boot partition
+
+`sudo cp -r ~/boottemp/* /boot/`
+
+Mount the EFI partition
+
+`sudo mount /dev/vda1 /boot/efi`
+
+Remove the temporary files directory
+
+`sudo rm -r ~/boottemp`
+
+Make a new directory for the key files
+
+`sudo mkdir /etc/keys`
+
+Set the permissions on the directory so that it's only readable by root
+
+`sudo chmod 700 /etc/keys`
+
+Create 64-byte random key files
+
+`sudo dd if=/dev/urandom of=/etc/keys/boot.key bs=64 count=1`
+
+`sudo dd if=/dev/urandom of=/etc/keys/system.key bs=64 count=1`
+
+Set the permissions on the key files so they're only readable by root
+
+`sudo chmod 400 /etc/keys/boot.key`
+
+`sudo chmod 400 /etc/keys/system.key`
+
+Add the boot.key file to the boot partition
+
+`sudo cryptsetup luksAddKey /dev/vda2 /etc/keys/boot.key`
+
+Enter your current password for the boot partition.
+
+Add the system.key file to the system partition
+
+`sudo cryptsetup luksAddKey /dev/vda3 /etc/keys/system.key`
+
+Now enter your current password for the system partition to add the key file.
+
+Modify the system encryption setup in /etc/crypttab to include the key file so that it will automatically be decrypted
+
+`sudo sed -i 's+none+/etc/keys/system.key+' /etc/crypttab`
+
+Add the line for the encrypted boot partition (change the UUID to the one previously used)
+
+`echo 'boot_crypt UUID=808a8028-5ad2-494b-aadd-6bcf9a67f43d /etc/keys/boot.key luks,discard' | sudo tee -a /etc/crypttab`
+
+Edit your /etc/fstab to change the previous /boot partition to the new encrypted one
+
+`sudo sed -i 's+^UUID=.*/boot .*+/dev/mapper/boot_crypt /boot ext4 defaults 0 2+' /etc/fstab`
+
+Add LUKS1 support to GRUB
+
+`echo 'GRUB_ENABLE_CRYPTODISK=y' | sudo tee -a /etc/default/grub`
+
+Add the key files to the initramfs image
+
+`echo 'KEYFILE_PATTERN="/etc/keys/*.key"' | sudo tee -a /etc/cryptsetup-initramfs/conf-hook`
+
+Make sure the new initramfs image file is only readable by root since it contains the LUKS key files
+
+`echo 'UMASK=0077' | sudo tee -a /etc/initramfs-tools/initramfs.conf`
+
+Reinstall GRUB with the added LUKS1 support
+
+`sudo grub-install /dev/vda`
+
+Update the initramfs images to contain the LUKS key files
+
+`sudo update-initramfs -uk all`
+
+Update the grub config
+
+`sudo update-grub`
+
+Reboot your machine. You will be prompted by GRUB to enter your LUKS password and then all of the other partitions will be unlocked automatically.
+
+## Future improvements
+I'd like to enable use of the TPM chip in the boot process on Linux. I haven't done enough research on how to enable this yet, but I will update the guide later.
+
+## Conclusion
+Enabling secure boot and encrypting your boot partition limits the attack surface of your machine at system boot. The default Ubuntu setup supports secure boot, but there is no way to encrypt your boot partition in the installer. Entering a few commands after the installation allows your boot files to be protected using full disk encryption.

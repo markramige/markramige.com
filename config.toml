@@ -55,7 +55,7 @@ enableRobotsTXT = true
     subtitle = "Cybersecurity and Linux, mostly"
     owner = "Mark Ramige"
     keywords = "cybersecurity infosec bugbounty appsec security windows linux"
-    copyright = "© 2021 <a href='https://github.com/markramige/markramigecom'>Mark Ramige</a> :: <a href='https://creativecommons.org/licenses/by/4.0/?ref=chooser-v1'>CC BY 4.0</a> Licensed :: Powered by <a href='http://gohugo.io'>Hugo</a>"
+    copyright = "© 2021 <a href='https://github.com/markramige/markramige.com'>Mark Ramige</a> :: <a href='https://creativecommons.org/licenses/by/4.0/?ref=chooser-v1'>CC BY 4.0</a> Licensed :: Powered by <a href='http://gohugo.io'>Hugo</a>"
     menuMore = "Show more"
     readMore = "Read more"
     readOtherPosts = "Read other posts"
@@ -63,7 +63,7 @@ enableRobotsTXT = true
     missingBackButtonLabel = "Back to home page"
 
     [languages.en.params.logo]
-      logoText = ">_ Mark Ramige"
+      logoText = "Mark Ramige >_"
       logoHomeLink = "/"
 
     [languages.en.menu]
